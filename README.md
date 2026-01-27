@@ -171,4 +171,4 @@ MIT License - see LICENSE file
 
 ## Author
 
-Jeremy Harvey (@diamondj___)
+Jeremy Harvey (@jdiamond)
