@@ -122,3 +122,19 @@ export function listScreenshots(): { name: string; path: string; size: number; m
     })
     .sort((a, b) => b.modified.getTime() - a.modified.getTime());
 }
+
+/**
+ * Check screenshot count and delete all if 10 or more exist.
+ * Returns info about cleanup if it occurred.
+ */
+export function checkAndCleanupIfNeeded(): { cleaned: boolean; count: number; deleted: string[] } {
+  const screenshots = listScreenshots();
+  const count = screenshots.length;
+
+  if (count >= 10) {
+    const deleted = deleteAllScreenshots();
+    return { cleaned: true, count, deleted };
+  }
+
+  return { cleaned: false, count, deleted: [] };
+}

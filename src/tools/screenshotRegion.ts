@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { writeFileSync } from 'fs';
 import { Screenshots } from 'node-screenshots';
 import { cropImage } from '../utils/image.js';
-import { getScreenshotPath } from '../utils/storage.js';
+import { getScreenshotPath, checkAndCleanupIfNeeded } from '../utils/storage.js';
 import { getAllMonitors } from '../utils/monitors.js';
 
 export const screenshotRegionSchema = z.object({
@@ -66,10 +66,18 @@ export async function screenshotRegion(params: ScreenshotRegionParams) {
     const filePath = getScreenshotPath(`region_${x}_${y}_${width}x${height}`);
     writeFileSync(filePath, imageBuffer);
 
+    // Auto-cleanup: delete all screenshots if 10 or more exist
+    const cleanup = checkAndCleanupIfNeeded();
+
+    let message = `Screenshot of region (${x}, ${y}, ${width}x${height}) saved to: ${filePath}\n\nUse the Read tool to view this image.`;
+    if (cleanup.cleaned) {
+      message += `\n\n(Auto-cleanup: deleted ${cleanup.deleted.length} screenshots - limit of 10 reached)`;
+    }
+
     return {
       content: [{
         type: 'text' as const,
-        text: `Screenshot of region (${x}, ${y}, ${width}x${height}) saved to: ${filePath}\n\nUse the Read tool to view this image.`
+        text: message
       }],
       filePath: filePath
     };

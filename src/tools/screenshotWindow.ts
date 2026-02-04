@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { writeFileSync } from 'fs';
 import { Screenshots } from 'node-screenshots';
 import { processImage, cropImage } from '../utils/image.js';
-import { getScreenshotPath } from '../utils/storage.js';
+import { getScreenshotPath, checkAndCleanupIfNeeded } from '../utils/storage.js';
 import { getActiveWindow } from '../utils/windows.js';
 
 export const screenshotWindowSchema = z.object({
@@ -100,10 +100,18 @@ export async function screenshotWindow(params: ScreenshotWindowParams) {
     const filePath = getScreenshotPath(`window_${safeTitle}`);
     writeFileSync(filePath, imageBuffer);
 
+    // Auto-cleanup: delete all screenshots if 10 or more exist
+    const cleanup = checkAndCleanupIfNeeded();
+
+    let message = `Screenshot of "${activeWindow.title}" saved to: ${filePath}\n\nUse the Read tool to view this image.`;
+    if (cleanup.cleaned) {
+      message += `\n\n(Auto-cleanup: deleted ${cleanup.deleted.length} screenshots - limit of 10 reached)`;
+    }
+
     return {
       content: [{
         type: 'text' as const,
-        text: `Screenshot of "${activeWindow.title}" saved to: ${filePath}\n\nUse the Read tool to view this image.`
+        text: message
       }],
       filePath: filePath,
       windowTitle: activeWindow.title
