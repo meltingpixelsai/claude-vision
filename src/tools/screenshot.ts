@@ -7,7 +7,7 @@ import { sleep } from '../utils/windows.js';
 
 export const screenshotSchema = z.object({
   monitor: z.union([z.number(), z.string()]).optional().default(0)
-    .describe('Monitor ID (0, 1, etc.) or name ("primary", "display1"). Defaults to 0.'),
+    .describe('Monitor number matching Windows Display Settings (1, 2, 3, etc.) or name ("primary", "display1"). Defaults to 0 (primary monitor).'),
   resize: z.number().optional()
     .describe('Maximum dimension (width or height) to resize to. E.g., 1920 for HD.'),
   quality: z.number().min(1).max(100).optional().default(80)

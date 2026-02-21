@@ -20,15 +20,20 @@ export async function listMonitors() {
       };
     }
 
+    // Sort by x position for layout display
+    const sorted = [...monitors].sort((a, b) => a.x - b.x);
+    const layout = sorted.map(m => `${m.id}`).join(' | ');
+
     const monitorList = monitors.map(m => {
       const primary = m.isPrimary ? ' (PRIMARY)' : '';
-      return `  - Monitor ${m.id}${primary}: ${m.resolution} at position (${m.x}, ${m.y})`;
+      const pos = m.position ? ` [${m.position}]` : '';
+      return `  - Monitor ${m.id}${primary}: ${m.name} - ${m.resolution} at (${m.x}, ${m.y})${pos}`;
     }).join('\n');
 
     return {
       content: [{
         type: 'text' as const,
-        text: `Found ${monitors.length} monitor(s):\n${monitorList}\n\nUse monitor ID (0, 1, etc.) or "primary" with the screenshot tool.`
+        text: `Found ${monitors.length} monitor(s):\n${monitorList}\n\nLayout (left to right): ${layout}\n\nUse Windows display number (${monitors.map(m => m.id).join(', ')}) or "primary" with the screenshot tool. Numbers match Windows Display Settings.`
       }],
       monitors: monitors
     };

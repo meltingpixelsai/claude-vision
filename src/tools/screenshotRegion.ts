@@ -1,9 +1,8 @@
 import { z } from 'zod';
 import { writeFileSync } from 'fs';
-import { Screenshots } from 'node-screenshots';
 import { cropImage } from '../utils/image.js';
 import { getScreenshotPath, checkAndCleanupIfNeeded } from '../utils/storage.js';
-import { getAllMonitors } from '../utils/monitors.js';
+import { getAllMonitors, getMonitor } from '../utils/monitors.js';
 
 export const screenshotRegionSchema = z.object({
   x: z.number().describe('Left coordinate of the region'),
@@ -25,8 +24,8 @@ export async function screenshotRegion(params: ScreenshotRegionParams) {
   try {
     const { x, y, width, height, monitor: monitorIndex } = params;
 
-    const monitors = Screenshots.all();
-    if (monitorIndex >= monitors.length) {
+    const targetMonitor = getMonitor(monitorIndex);
+    if (!targetMonitor) {
       const available = getAllMonitors();
       const list = available.map(m => `${m.id}: ${m.resolution}`).join(', ');
       return {
@@ -37,8 +36,6 @@ export async function screenshotRegion(params: ScreenshotRegionParams) {
         isError: true
       };
     }
-
-    const targetMonitor = monitors[monitorIndex];
 
     // Validate region bounds
     if (x < 0 || y < 0 || x + width > targetMonitor.width || y + height > targetMonitor.height) {
